@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oblique Strategies</title>
 <meta name="description" content="A random Oblique Strategy on every page load.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..500&display=block" rel="stylesheet">
 <style>
   :root {
     --table: #a4a3a1;
@@ -30,11 +27,10 @@
     background: var(--table);
     background-image: radial-gradient(120% 90% at 50% 30%, #b3b2b0, #8e8d8b);
     color: var(--ink);
-    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-optical-sizing: auto;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-kerning: normal;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
-    text-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     display: grid;
     place-items: center;
@@ -73,10 +69,9 @@
   h1 {
     position: relative;
     z-index: 1;
-    font-weight: 450;
-    font-size: clamp(1.1rem, 2.9vw, 1.5rem);
+    font-weight: 500;
+    font-size: clamp(1.3rem, 3.6vw, 1.875rem);
     line-height: 1.3;
-    letter-spacing: -0.005em;
     text-align: center;
     text-wrap: balance;
     max-width: 26ch;
