@@ -10,9 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --table: #a4a9ae;
-    --card: #f4f6f8;
-    --ink: #0a0b0d;
+    --table: #a29d92;
+    --card: #f5f2e8;
+    --ink: #0b0b0b;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,7 +21,7 @@
 
   body {
     background: var(--table);
-    background-image: radial-gradient(120% 90% at 50% 30%, #b4b9be, #8b9096);
+    background-image: radial-gradient(120% 90% at 50% 30%, #b0aba0, #8f8a7f);
     color: var(--ink);
     font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-optical-sizing: auto;
@@ -39,24 +39,13 @@
   /* Card: plain stock, rounded corners, small centered sans text */
   .stack { position: relative; }
 
-  /* Paper: one soft shadow, a faint edge highlight, fine grain on top */
+  /* Paper: one soft shadow and a faint edge highlight */
   .card, .sheet {
     aspect-ratio: 3 / 2;
-    background: linear-gradient(160deg, #fafbfc 0%, var(--card) 60%, #e9ecf0 100%);
+    background: linear-gradient(160deg, #fbf9f1 0%, var(--card) 60%, #ece7d6 100%);
     border-radius: clamp(14px, 3vw, 22px);
-    box-shadow: 0 1px 0 #fff inset, 0 6px 14px -4px #0a0f1459;
+    box-shadow: 0 1px 0 #fff inset, 0 6px 14px -4px #1e190f59;
   }
-  .card::before, .sheet::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .28 0 0 0 0 .33 1 0 0 0 -.38'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: .8;
-    mix-blend-mode: multiply;
-  }
-
   .card {
     position: relative;
     z-index: 4;
