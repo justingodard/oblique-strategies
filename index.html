@@ -7,24 +7,27 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Inter:opsz,wght@14..32,400;14..32,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --box: #4a4842;
-    --card: #efe9db;
-    --ink: #070707;
-    --gold: #d8c58f;
+    --table: #a29d92;
+    --card: #f5f2e8;
+    --ink: #0b0b0b;
+    --leather: #0c0c0e;
+    --gold: #d6c286;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
 
   body {
-    background: var(--box);
-    color: var(--card);
-    font-family: "EB Garamond", Garamond, "Times New Roman", serif;
+    background: var(--table);
+    background-image: radial-gradient(120% 90% at 50% 30%, #b0aba0, #8f8a7f);
+    color: var(--ink);
+    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-optical-sizing: auto;
     font-kerning: normal;
-    font-feature-settings: "kern" 1, "liga" 1, "dlig" 0;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
     text-rendering: geometricPrecision;
     -webkit-font-smoothing: antialiased;
     display: grid;
@@ -32,53 +35,69 @@
     padding: 24px;
   }
 
-  figure { width: min(92vw, 760px); }
+  .stack { width: min(92vw, 640px); display: grid; gap: clamp(28px, 6vh, 56px); }
 
+  /* Box: leather spine with the lid line below it */
+  .box { filter: drop-shadow(0 18px 18px #0005); }
+  .spine {
+    background: linear-gradient(180deg, #1b1b1e 0%, var(--leather) 40%, #060607 100%);
+    border-radius: 3px 3px 0 0;
+    padding: clamp(18px, 4vw, 30px) 0;
+    text-align: center;
+    box-shadow: inset 0 1px 0 #ffffff1f;
+  }
+  .spine span {
+    font-family: "EB Garamond", "Times New Roman", serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: clamp(1.2rem, 4.6vw, 2rem);
+    letter-spacing: 0.015em;
+    font-kerning: normal;
+    color: var(--gold);
+    text-shadow: 0 1px 0 #00000080;
+  }
+  .base {
+    height: clamp(26px, 5vw, 40px);
+    width: 96%;
+    margin: 0 auto;
+    background: linear-gradient(180deg, #050506, #121214);
+  }
+
+  /* Card: plain stock, rounded corners, small centered sans text */
   .card {
-    aspect-ratio: 5 / 3;
-    background: var(--card);
-    color: var(--ink);
-    border: clamp(10px, 2.2vw, 18px) solid var(--ink);
-    outline: 1px solid #ffffff22;
+    aspect-ratio: 3 / 2;
+    background: linear-gradient(160deg, #fbf9f1 0%, var(--card) 60%, #ece7d6 100%);
+    border-radius: clamp(14px, 3vw, 22px);
     display: grid;
     place-items: center;
-    padding: clamp(18px, 5vw, 56px);
-    box-shadow: 0 30px 60px -20px #000, 0 2px 0 #ffffff14 inset;
+    padding: clamp(24px, 7vw, 64px);
+    box-shadow: 0 1px 0 #fff inset, 0 14px 28px -10px #0006, 0 2px 4px #0003;
     cursor: pointer;
     user-select: none;
   }
 
   h1 {
     font-weight: 400;
-    font-size: clamp(1.4rem, 4.4vw, 2.6rem);
-    line-height: 1.22;
-    letter-spacing: 0.005em;
+    font-size: clamp(1rem, 2.6vw, 1.35rem);
+    line-height: 1.3;
+    letter-spacing: -0.005em;
     text-align: center;
     text-wrap: balance;
-    hanging-punctuation: first last;
+    max-width: 26ch;
   }
 
-  figcaption {
-    margin-top: 22px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
-    color: var(--gold);
-  }
-
-  a { color: inherit; text-decoration: none; }
-  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  #num { display: none; }
 </style>
 </head>
 <body>
-  <figure>
+  <div class="stack">
+    <div class="box" aria-hidden="true">
+      <div class="spine"><span>Oblique Strategies</span></div>
+      <div class="base"></div>
+    </div>
     <div class="card" id="card" title="Draw another card"><h1 id="strategy" aria-live="polite"></h1></div>
-    <figcaption>
-      <span>Oblique Strategies &middot; <i>Over One Hundred Worthwhile Dilemmas</i></span>
-      <a href="" onclick="location.reload(); return false;"><span id="num">No. 000</span></a>
-    </figcaption>
-  </figure>
+    <span id="num"></span>
+  </div>
 
 <script>
   // Source: "Visual Arts: Oblique Strategies Dartboard" (147 statements).
