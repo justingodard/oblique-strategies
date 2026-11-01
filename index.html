@@ -63,11 +63,28 @@
     user-select: none;
   }
 
-  /* Cards waiting underneath */
-  .sheet { position: absolute; inset: 0; }
-  .s1 { z-index: 3; transform: translate(0, 9px) rotate(.5deg); }
-  .s2 { z-index: 2; transform: translate(-3px, 18px) rotate(-.8deg); }
-  .s3 { z-index: 1; transform: translate(4px, 27px) rotate(1.1deg); }
+  /* Cards waiting underneath. Offsets are randomised per load in the script. */
+  .sheet {
+    position: absolute;
+    inset: 0;
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--rot, 0deg));
+    animation: fan 520ms cubic-bezier(.2, .8, .25, 1) both;
+  }
+  .s1 { z-index: 3; animation-delay: 60ms; }
+  .s2 { z-index: 2; animation-delay: 110ms; }
+  .s3 { z-index: 1; animation-delay: 160ms; }
+
+  .card { animation: land 380ms cubic-bezier(.2, .8, .25, 1) both; }
+
+  @keyframes fan {
+    from { transform: translate(0, 0) rotate(0deg); }
+  }
+  @keyframes land {
+    from { transform: translateY(-14px) rotate(var(--land, .6deg)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet, .card { animation: none; }
+  }
 
   h1 {
     position: relative;
@@ -245,6 +262,21 @@
     "You can only make one dot at a time",
     "Your mistake was a hidden intention"
   ];
+
+  // A slightly different stack on every load.
+  (function () {
+    var r = function (a, b) { return a + Math.random() * (b - a); };
+    var sign = function () { return Math.random() < 0.5 ? -1 : 1; };
+    var lastSign = sign();
+    ["s1", "s2", "s3"].forEach(function (cls, i) {
+      var el = document.querySelector(".sheet." + cls);
+      lastSign = -lastSign; // alternate sides so the pile stays believable
+      el.style.setProperty("--dx", (sign() * r(1, 3 + i * 2)).toFixed(1) + "px");
+      el.style.setProperty("--dy", (8 + i * 8 + r(-2, 3)).toFixed(1) + "px");
+      el.style.setProperty("--rot", (lastSign * r(0.4, 0.9 + i * 0.5)).toFixed(2) + "deg");
+    });
+    document.getElementById("card").style.setProperty("--land", (sign() * r(0.3, 0.8)).toFixed(2) + "deg");
+  })();
 
   document.querySelector(".stack").addEventListener("click", function () { location.reload(); });
   (function () {
