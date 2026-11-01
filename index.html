@@ -37,19 +37,45 @@
   .stack { width: min(100%, 640px); }
 
   /* Card: plain stock, rounded corners, small centered sans text */
-  .card {
+  .stack { position: relative; }
+
+  /* Paper: one soft shadow, a faint edge highlight, fine grain on top */
+  .card, .sheet {
     aspect-ratio: 3 / 2;
-    background: linear-gradient(160deg, #fafbfc 0%, var(--card) 60%, #e6e9ed 100%);
+    background: linear-gradient(160deg, #fafbfc 0%, var(--card) 60%, #e9ecf0 100%);
     border-radius: clamp(14px, 3vw, 22px);
+    box-shadow: 0 1px 0 #fff inset, 0 6px 14px -4px #0a0f1459;
+  }
+  .card::before, .sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .28 0 0 0 0 .33 1 0 0 0 -.38'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: .8;
+    mix-blend-mode: multiply;
+  }
+
+  .card {
+    position: relative;
+    z-index: 4;
     display: grid;
     place-items: center;
     padding: clamp(24px, 7vw, 64px);
-    box-shadow: 0 1px 0 #fff inset, 0 14px 28px -10px #0a0f1499, 0 2px 4px #0a0f1440;
     cursor: pointer;
     user-select: none;
   }
 
+  /* Cards waiting underneath */
+  .sheet { position: absolute; inset: 0; }
+  .s1 { z-index: 3; transform: translate(0, 9px) rotate(.5deg); }
+  .s2 { z-index: 2; transform: translate(-3px, 18px) rotate(-.8deg); }
+  .s3 { z-index: 1; transform: translate(4px, 27px) rotate(1.1deg); }
+
   h1 {
+    position: relative;
+    z-index: 1;
     font-weight: 450;
     font-size: clamp(1.1rem, 2.9vw, 1.5rem);
     line-height: 1.3;
@@ -64,6 +90,7 @@
 </head>
 <body>
   <div class="stack">
+    <div class="sheet s3"></div><div class="sheet s2"></div><div class="sheet s1"></div>
     <div class="card" id="card" title="Draw another card"><h1 id="strategy" aria-live="polite"></h1></div>
     <span id="num"></span>
   </div>
