@@ -38,6 +38,8 @@
 
   /* Card: plain stock, rounded corners, small centered sans text */
   .stack { position: relative; }
+  .card, .sheet { cursor: grab; }
+  .card:active, .sheet:active { cursor: grabbing; }
 
   /* Paper: one soft shadow and a faint edge highlight */
   .card, .sheet {
@@ -52,7 +54,6 @@
     display: grid;
     place-items: center;
     padding: clamp(24px, 7vw, 64px);
-    cursor: pointer;
     user-select: none;
   }
 
@@ -236,7 +237,7 @@
     "Your mistake was a hidden intention"
   ];
 
-  document.getElementById("card").addEventListener("click", function () { location.reload(); });
+  document.querySelector(".stack").addEventListener("click", function () { location.reload(); });
   (function () {
     // Pick a random strategy, avoiding an immediate repeat of the last one shown.
     let last = -1;
