@@ -7,18 +7,17 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Inter:opsz,wght@14..32,400;14..32,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500&display=swap" rel="stylesheet">
 <style>
   :root {
     --table: #a29d92;
     --card: #f5f2e8;
     --ink: #0b0b0b;
-    --leather: #0c0c0e;
-    --gold: #d6c286;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
+  body { min-height: 100vh; min-height: 100dvh; }
 
   body {
     background: var(--table);
@@ -35,33 +34,7 @@
     padding: 24px;
   }
 
-  .stack { width: min(92vw, 640px); display: grid; gap: clamp(28px, 6vh, 56px); }
-
-  /* Box: leather spine with the lid line below it */
-  .box { filter: drop-shadow(0 18px 18px #0005); }
-  .spine {
-    background: linear-gradient(180deg, #1b1b1e 0%, var(--leather) 40%, #060607 100%);
-    border-radius: 3px 3px 0 0;
-    padding: clamp(18px, 4vw, 30px) 0;
-    text-align: center;
-    box-shadow: inset 0 1px 0 #ffffff1f;
-  }
-  .spine span {
-    font-family: "EB Garamond", "Times New Roman", serif;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: clamp(1.2rem, 4.6vw, 2rem);
-    letter-spacing: 0.015em;
-    font-kerning: normal;
-    color: var(--gold);
-    text-shadow: 0 1px 0 #00000080;
-  }
-  .base {
-    height: clamp(26px, 5vw, 40px);
-    width: 96%;
-    margin: 0 auto;
-    background: linear-gradient(180deg, #050506, #121214);
-  }
+  .stack { width: min(92vw, 640px); }
 
   /* Card: plain stock, rounded corners, small centered sans text */
   .card {
@@ -91,10 +64,6 @@
 </head>
 <body>
   <div class="stack">
-    <div class="box" aria-hidden="true">
-      <div class="spine"><span>Oblique Strategies</span></div>
-      <div class="base"></div>
-    </div>
     <div class="card" id="card" title="Draw another card"><h1 id="strategy" aria-live="polite"></h1></div>
     <span id="num"></span>
   </div>
