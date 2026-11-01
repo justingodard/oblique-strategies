@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oblique Strategies</title>
+<meta name="description" content="A random Oblique Strategy on every page load.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e3e3e1;
+    --ink: #0a0a0a;
+    --ink-soft: #0a0a0a99;
+    --gutter: clamp(20px, 4vw, 56px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-optical-sizing: auto;
+    font-kerning: normal;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss03" 0;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: var(--gutter);
+  }
+
+  header, footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    font-feature-settings: "kern" 1, "tnum" 1;
+  }
+
+  header { border-bottom: 1px solid var(--ink); padding-bottom: 14px; }
+  footer { border-top: 1px solid var(--ink); padding-top: 14px; }
+
+  .muted { color: var(--ink-soft); }
+
+  main {
+    display: flex;
+    align-items: center;
+    padding: 8vh 0;
+  }
+
+  h1 {
+    font-weight: 500;
+    font-size: clamp(2.25rem, 6.2vw, 5.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.032em;
+    max-width: 18ch;
+    text-wrap: balance;
+    hanging-punctuation: first last;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: in 700ms cubic-bezier(.2,.7,.2,1) 80ms forwards;
+  }
+
+  @keyframes in { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    h1 { animation: none; opacity: 1; transform: none; }
+  }
+
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+  <header>
+    <span>Oblique Strategies</span>
+    <span class="muted">Brian Eno &amp; Peter Schmidt</span>
+  </header>
+
+  <main>
+    <h1 id="strategy" aria-live="polite"></h1>
+  </main>
+
+  <footer>
+    <span id="num">No. 000</span>
+    <a href="" class="muted" onclick="location.reload(); return false;">Another</a>
+  </footer>
+
+<script>
+  // Source: "Visual Arts: Oblique Strategies Dartboard" (147 statements).
+  const STRATEGIES = [
+    "A line has two sides",
+    "A very small object. Its center",
+    "Abandon desire",
+    "Abandon normal instructions",
+    "Accept advice",
+    "Adding on",
+    "Always give yourself credit for having more than personality",
+    "Always the first steps",
+    "Ask people to work against their better judgement",
+    "Ask your body",
+    "Balance the consistency principle with the inconsistency principle",
+    "Be dirty",
+    "Be extravagant",
+    "Be less critical",
+    "Breathe more deeply",
+    "Bridges - build - burn",
+    "Cascades",
+    "Change ambiguities to specifics",
+    "Change instrument roles",
+    "Change nothing and continue consistently",
+    "Change specifics to ambiguities",
+    "Children - speaking - singing",
+    "Cluster analysis",
+    "Consider different fading systems",
+    "Consider transitions",
+    "Consult other sources - promising - unpromising",
+    "Convert a melodic element into a rhythmic element",
+    "Courage!",
+    "Cut a vital connection",
+    "Decorate, decorate",
+    "Destroy nothing; Destroy the most important thing",
+    "Discard an axiom",
+    "Disciplined self-indulgence",
+    "Discover your formulas and abandon them",
+    "Display your talent",
+    "Distort time",
+    "Do nothing for as long as possible",
+    "Do something boring",
+    "Do something sudden, destructive and unpredictable",
+    "Do the last thing first",
+    "Do the washing up",
+    "Do the words need changing?",
+    "Do we need holes?",
+    "Don't avoid what is easy",
+    "Don't break the silence",
+    "Don't stress one thing more than another",
+    "Emphasize differences",
+    "Emphasize repetitions",
+    "Emphasize the flaws",
+    "Faced with a choice, do both",
+    "Feed the recording back out of the medium",
+    "Fill every beat with something",
+    "Find a safe part and use it as an anchor",
+    "From nothing to more than nothing",
+    "Get your neck massaged",
+    "Ghost echoes",
+    "Give the name away",
+    "Give way to your worst impulse",
+    "Go outside. Shut the door.",
+    "Go slowly all the way round the outside",
+    "Go to an extreme, come part way back",
+    "How would someone else do it?",
+    "How would you have done it?",
+    "Idiot glee",
+    "Imagine the piece as a set of disconnected events",
+    "In total darkness, or in a very large room, very quietly",
+    "Infinitesimal gradations",
+    "Intentions - nobility of - humility of - credibility of",
+    "Into the impossible",
+    "Is it finished?",
+    "Is something missing?",
+    "Is the intonation correct?",
+    "Is the style right?",
+    "It is quite possible (after all)",
+    "It is simply a matter of work",
+    "Just carry on",
+    "Left channel, right channel, center channel",
+    "Listen to the quiet voice",
+    "Look at the order in which you do things",
+    "Lost in useless territory",
+    "Lowest common denominator",
+    "Magnify the most difficult details",
+    "Make a blank valuable by putting it in an exquisite frame",
+    "Make it more sensual",
+    "Make what's perfect more human",
+    "Mechanize something idiosyncratic",
+    "Move towards the unimportant",
+    "Mute and continue",
+    "Not building a wall; making a brick",
+    "Once the search has begun, something will be found",
+    "Only a part, not the whole",
+    "Only one element of each kind",
+    "Openly resist change",
+    "(Organic) machinery",
+    "Put in earplugs",
+    "Question the heroic",
+    "Reevaluation (a warm feeling)",
+    "Remember quiet evenings",
+    "Remove a restriction",
+    "Repetition is a form of change",
+    "Retrace your steps",
+    "Reverse",
+    "Short circuit (example: a man eating peas with the idea that they will improve his virility shovels them straight into his lap)",
+    "Simple subtraction",
+    "Slow preparation, fast execution",
+    "Spectrum analysis",
+    "State the problem as clearly as possible",
+    "Take a break",
+    "Take away the important parts",
+    "Tape your mouth",
+    "The inconsistency principle",
+    "The most easily forgotten thing is the most important",
+    "The tape is now the music",
+    "Think - inside the work - outside the work",
+    "Think of the radio",
+    "Tidy up",
+    "Trust in the you of now",
+    "Try faking it",
+    "Turn it upside down",
+    "Twist the spine",
+    "Use “unqualified” people",
+    "Use an old idea",
+    "Use an unacceptable color",
+    "Use cliches",
+    "Use fewer notes",
+    "Use filters",
+    "Use something nearby as a model",
+    "Use your own ideas",
+    "Voice your suspicions",
+    "Water",
+    "What are the sections sections of? Imagine a caterpillar moving",
+    "What are you really thinking about just now?",
+    "What context would look right?",
+    "What is the reality of the situation?",
+    "What is the simplest solution?",
+    "What mistakes did you make last time?",
+    "What to increase? What to reduce? What to maintain?",
+    "What would your closest friend do?",
+    "What wouldn't you do?",
+    "When is it for?",
+    "Where is the edge?",
+    "Which parts can be grouped?",
+    "Work at a different speed",
+    "Would anyone want it?",
+    "You are an engineer",
+    "You can only make one dot at a time",
+    "Your mistake was a hidden intention"
+  ];
+
+  (function () {
+    // Pick a random strategy, avoiding an immediate repeat of the last one shown.
+    let last = -1;
+    try { last = parseInt(sessionStorage.getItem("os:last"), 10); } catch (e) {}
+    let i;
+    do {
+      i = Math.floor(Math.random() * STRATEGIES.length);
+    } while (i === last && STRATEGIES.length > 1);
+    try { sessionStorage.setItem("os:last", String(i)); } catch (e) {}
+
+    document.getElementById("strategy").textContent = STRATEGIES[i];
+    document.getElementById("num").textContent =
+      "No. " + String(i + 1).padStart(3, "0") + " / " + STRATEGIES.length;
+  })();
+</script>
+</body>
+</html>
