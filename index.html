@@ -7,71 +7,64 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #e3e3e1;
-    --ink: #0a0a0a;
-    --ink-soft: #0a0a0a99;
-    --gutter: clamp(20px, 4vw, 56px);
+    --box: #4a4842;
+    --card: #efe9db;
+    --ink: #070707;
+    --gold: #d8c58f;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body { height: 100%; }
 
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: "Inter", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-    font-optical-sizing: auto;
+    background: var(--box);
+    color: var(--card);
+    font-family: "EB Garamond", Garamond, "Times New Roman", serif;
     font-kerning: normal;
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss03" 0;
+    font-feature-settings: "kern" 1, "liga" 1, "dlig" 0;
     text-rendering: geometricPrecision;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: var(--gutter);
+    place-items: center;
+    padding: 24px;
   }
 
-  header, footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    font-feature-settings: "kern" 1, "tnum" 1;
-  }
+  figure { width: min(92vw, 760px); }
 
-  header { border-bottom: 1px solid var(--ink); padding-bottom: 14px; }
-  footer { border-top: 1px solid var(--ink); padding-top: 14px; }
-
-  .muted { color: var(--ink-soft); }
-
-  main {
-    display: flex;
-    align-items: center;
-    padding: 8vh 0;
+  .card {
+    aspect-ratio: 5 / 3;
+    background: var(--card);
+    color: var(--ink);
+    border: clamp(10px, 2.2vw, 18px) solid var(--ink);
+    outline: 1px solid #ffffff22;
+    display: grid;
+    place-items: center;
+    padding: clamp(18px, 5vw, 56px);
+    box-shadow: 0 30px 60px -20px #000, 0 2px 0 #ffffff14 inset;
+    cursor: pointer;
+    user-select: none;
   }
 
   h1 {
-    font-weight: 500;
-    font-size: clamp(2.25rem, 6.2vw, 5.75rem);
-    line-height: 1.04;
-    letter-spacing: -0.032em;
-    max-width: 18ch;
+    font-weight: 400;
+    font-size: clamp(1.4rem, 4.4vw, 2.6rem);
+    line-height: 1.22;
+    letter-spacing: 0.005em;
+    text-align: center;
     text-wrap: balance;
     hanging-punctuation: first last;
-    opacity: 0;
-    transform: translateY(6px);
-    animation: in 700ms cubic-bezier(.2,.7,.2,1) 80ms forwards;
   }
 
-  @keyframes in { to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) {
-    h1 { animation: none; opacity: 1; transform: none; }
+  figcaption {
+    margin-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    color: var(--gold);
   }
 
   a { color: inherit; text-decoration: none; }
@@ -79,19 +72,13 @@
 </style>
 </head>
 <body>
-  <header>
-    <span>Oblique Strategies</span>
-    <span class="muted">Brian Eno &amp; Peter Schmidt</span>
-  </header>
-
-  <main>
-    <h1 id="strategy" aria-live="polite"></h1>
-  </main>
-
-  <footer>
-    <span id="num">No. 000</span>
-    <a href="" class="muted" onclick="location.reload(); return false;">Another</a>
-  </footer>
+  <figure>
+    <div class="card" id="card" title="Draw another card"><h1 id="strategy" aria-live="polite"></h1></div>
+    <figcaption>
+      <span>Oblique Strategies &middot; <i>Over One Hundred Worthwhile Dilemmas</i></span>
+      <a href="" onclick="location.reload(); return false;"><span id="num">No. 000</span></a>
+    </figcaption>
+  </figure>
 
 <script>
   // Source: "Visual Arts: Oblique Strategies Dartboard" (147 statements).
@@ -245,6 +232,7 @@
     "Your mistake was a hidden intention"
   ];
 
+  document.getElementById("card").addEventListener("click", function () { location.reload(); });
   (function () {
     // Pick a random strategy, avoiding an immediate repeat of the last one shown.
     let last = -1;
