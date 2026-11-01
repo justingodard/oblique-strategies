@@ -74,13 +74,16 @@
   .s2 { z-index: 2; animation-delay: 110ms; }
   .s3 { z-index: 1; animation-delay: 160ms; }
 
-  .card { animation: land 380ms cubic-bezier(.2, .8, .25, 1) both; }
+  .card {
+    transform: rotate(var(--tilt, 0deg));
+    animation: land 380ms cubic-bezier(.2, .8, .25, 1) both;
+  }
 
   @keyframes fan {
     from { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes land {
-    from { transform: translateY(-14px) rotate(var(--land, .6deg)); }
+    from { transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + var(--land, .6deg))); }
   }
   @media (prefers-reduced-motion: reduce) {
     .sheet, .card { animation: none; }
@@ -275,7 +278,9 @@
       el.style.setProperty("--dy", (8 + i * 8 + r(-2, 3)).toFixed(1) + "px");
       el.style.setProperty("--rot", (lastSign * r(0.4, 0.9 + i * 0.5)).toFixed(2) + "deg");
     });
-    document.getElementById("card").style.setProperty("--land", (sign() * r(0.3, 0.8)).toFixed(2) + "deg");
+    var card = document.getElementById("card");
+    card.style.setProperty("--tilt", (sign() * r(0.4, 1.6)).toFixed(2) + "deg");
+    card.style.setProperty("--land", (sign() * r(0.3, 0.8)).toFixed(2) + "deg");
   })();
 
   document.querySelector(".stack").addEventListener("click", function () { location.reload(); });
