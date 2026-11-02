@@ -163,11 +163,25 @@
     pointer-events: none;
   }
   #num { bottom: max(20px, env(safe-area-inset-bottom)); }
+  /* Tap the title to start over. The padding makes a comfortable touch target without
+     moving the words: it is cancelled by the offset on top. */
   #title {
-    top: max(20px, env(safe-area-inset-top));
+    top: calc(max(20px, env(safe-area-inset-top)) - 12px);
+    left: 50%;
+    right: auto;
+    width: max-content;
+    transform: translateX(-50%);
+    padding: 12px 18px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: color 150ms ease, opacity 500ms ease;
   }
+  #title:hover { color: #1f1e1d; }
+  body.ended #title { pointer-events: none; }
 
   /* The finale: after the last card is thrown, the table is left bare */
   .stack .card, .pile, #num, #title { transition: opacity 500ms ease; }
@@ -181,7 +195,7 @@
     <div class="pile" id="pile" aria-hidden="true"></div>
     <div class="card" id="card" role="button" tabindex="0" aria-label="Draw the next card" title="Drag, flick or tap to draw"><h1 id="strategy" aria-live="polite"></h1></div>
     <span id="num"></span>
-    <span id="title">Oblique Strategies</span>
+    <span id="title" role="button" tabindex="0" aria-label="Start over" title="Start over">Oblique Strategies</span>
   </div>
 
 <script>
@@ -605,14 +619,17 @@
       .catch(function () { try { synthChime(done); } catch (e) { setTimeout(done, 1500); } });
   }
 
+  var finaleRun = 0, lastRestart = 0;
   function finale() {
+    var run = ++finaleRun;
     ended = true; canRestart = false;
     unlockAudio();
     document.body.classList.add("ended");
     setTimeout(function () {
+      if (run !== finaleRun) return;          // started over before the chime began
       var finished = false;
       playFinale(function () {
-        if (finished) return; finished = true;
+        if (finished || run !== finaleRun) return; finished = true;
         canRestart = true;
         numEl.textContent = "Tap to shuffle again";
         document.body.classList.add("hint");
@@ -621,6 +638,9 @@
   }
 
   function restart() {
+    lastRestart = Date.now();
+    finaleRun++;                              // cancels a finale that is still in progress
+    if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
     ended = false; canRestart = false;
     document.body.classList.remove("ended", "hint");
     shuffle(); pos = -1;
@@ -634,6 +654,17 @@
   }
   function maybeRestart(e) { if (ended && canRestart) { e.preventDefault(); restart(); return true; } return false; }
   document.addEventListener("pointerdown", maybeRestart, true);
+
+  // The page title is a "start over" button.
+  var titleEl = document.getElementById("title");
+  function startOver() {
+    titleEl.blur();                           // so space and enter go back to drawing cards
+    if (Date.now() - lastRestart > 400) restart();
+  }
+  titleEl.addEventListener("click", startOver);
+  titleEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); startOver(); }
+  });
 
   function springBack() {
     card.style.transition = reduced ? "none" : "transform 340ms cubic-bezier(.2,1.3,.4,1)";
@@ -682,7 +713,7 @@
   // Keyboard: space, enter or the arrow keys draw a card.
   var keyDir = { ArrowRight: [1, -0.2], ArrowLeft: [-1, -0.2], ArrowUp: [0, -1], ArrowDown: [0, 1] };
   document.addEventListener("keydown", function (e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || e.target === titleEl) return;
     if (ended) { if (canRestart) { e.preventDefault(); restart(); } return; }
     var d = keyDir[e.key];
     if (!d && (e.key === " " || e.key === "Enter")) d = [sign() * 0.9, -0.45];
