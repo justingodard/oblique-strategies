@@ -104,7 +104,19 @@
     max-width: 26ch;
   }
 
-  #num { display: none; }
+  /* Position in the deck, centred at the very bottom */
+  #num {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    font-feature-settings: "tnum" 1, "kern" 1;
+    color: #4d4c4a;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -295,8 +307,7 @@
     try { sessionStorage.setItem("os:last", String(i)); } catch (e) {}
 
     document.getElementById("strategy").textContent = STRATEGIES[i];
-    document.getElementById("num").textContent =
-      "No. " + String(i + 1).padStart(3, "0") + " / " + STRATEGIES.length;
+    document.getElementById("num").textContent = (i + 1) + "/" + STRATEGIES.length;
   })();
 </script>
 </body>
