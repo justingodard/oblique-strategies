@@ -7,7 +7,7 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
 <style>
   :root {
     --table: #a4a3a1;
@@ -117,6 +117,20 @@
     text-wrap: balance;
     max-width: 26ch;
   }
+
+  /* The title card: first thing you see, drawn away to reach the first strategy */
+  .card.intro h1 {
+    font-size: clamp(0.9rem, 2.6vw, 1.45rem);
+    line-height: 1.3;
+    max-width: none;
+    text-wrap: initial;
+  }
+  .card.intro h1 span { display: block; text-wrap: balance; }
+  .t-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+  .t-sub { margin-top: 0.3em; }
+  .t-by { margin-top: 1.5em; text-transform: uppercase; }
+  .t-by i { font-style: normal; text-transform: none; }
+  .t-fine { margin-top: 1.4em; font-size: 0.62em; line-height: 1.35; }
 
   /* Small grey labels: title at the top, position in the deck at the bottom */
   #num, #title {
@@ -325,6 +339,13 @@
     pos = 0;
   }
   shuffle();
+  pos = -1; // -1 is the title card, before the first strategy
+
+  var INTRO_HTML =
+    '<span class="t-title">Oblique Strategies</span>' +
+    '<span class="t-sub">Over one hundred worthwhile dilemmas</span>' +
+    '<span class="t-by">Brian Eno <i>and</i> Peter Schmidt</span>' +
+    '<span class="t-fine">\u00A9 1975 Brian Eno and Peter Schmidt</span>';
 
   // The pile under the top card. Each layer's wobble is fixed when the page loads
   // (a gentle random walk, so the edge looks like real paper), and the pile only
@@ -368,15 +389,23 @@
   // Show the current card, the next card peeking underneath, and the pile height.
   var tilt = 0;
   function render() {
+    var intro = pos < 0;
     var remaining = TOTAL - 1 - pos;
-    textEl.textContent = STRATEGIES[deck[pos]];
-    // The number is the card's own number from the PDF.
-    numEl.textContent = (deck[pos] + 1) + "/" + TOTAL;
-    peekEl.textContent = remaining > 0 ? STRATEGIES[deck[pos + 1]] : "";
+    card.classList.toggle("intro", intro);
+    if (intro) {
+      textEl.innerHTML = INTRO_HTML;
+      numEl.textContent = "";
+      peekEl.textContent = STRATEGIES[deck[0]];
+    } else {
+      textEl.textContent = STRATEGIES[deck[pos]];
+      // The number is the card's own number from the PDF.
+      numEl.textContent = (deck[pos] + 1) + "/" + TOTAL;
+      peekEl.textContent = remaining > 0 ? STRATEGIES[deck[pos + 1]] : "";
+    }
     tilt = sign() * rand(0.4, 1.6);
     card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
     card.style.setProperty("--land", (sign() * rand(0.3, 0.8)).toFixed(2) + "deg");
-    var visible = Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1));
+    var visible = Math.min(MAX_LAYERS, Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1)));
     fitPile();
     layers.forEach(function (l, i) {
       l.el.classList.toggle("gone", i >= visible);
