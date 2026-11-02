@@ -109,18 +109,23 @@
     max-width: 26ch;
   }
 
-  /* Position in the deck, centred at the very bottom */
-  #num {
+  /* Small grey labels: title at the top, position in the deck at the bottom */
+  #num, #title {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: max(20px, env(safe-area-inset-bottom));
     text-align: center;
     font-size: 14px;
     letter-spacing: 0.02em;
     font-feature-settings: "tnum" 1, "kern" 1;
     color: #4d4c4a;
     pointer-events: none;
+  }
+  #num { bottom: max(20px, env(safe-area-inset-bottom)); }
+  #title {
+    top: max(20px, env(safe-area-inset-top));
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 </style>
 </head>
@@ -129,6 +134,7 @@
     <div class="pile" id="pile" aria-hidden="true"></div>
     <div class="card" id="card" role="button" tabindex="0" aria-label="Draw the next card" title="Drag, flick or tap to draw"><h1 id="strategy" aria-live="polite"></h1></div>
     <span id="num"></span>
+    <span id="title">Oblique Strategies</span>
   </div>
 
 <script>
@@ -317,16 +323,14 @@
   var MAX_LAYERS = 56, STEP = 1;
   var layers = [];
   (function () {
-    var dx = rand(-2, 2), rot = rand(-0.6, 0.6);
+    var dx = rand(-3, 3), rot = rand(-1, 1);
     for (var k = 1; k <= MAX_LAYERS; k++) {
-      dx = clamp(dx + rand(-0.9, 0.9), -5, 5);
-      rot = clamp(rot + rand(-0.2, 0.2), -1.2, 1.2);
+      dx = clamp(dx + rand(-2, 2), -11, 11);
+      rot = clamp(rot + rand(-0.45, 0.45), -3, 3);
       var el = document.createElement("div");
       el.className = "sheet";
       el.style.zIndex = String(100 - k);
       el.style.animationDelay = Math.min(k, 12) * 18 + "ms";
-      el.style.setProperty("--dx", dx.toFixed(2) + "px");
-      el.style.setProperty("--dy", (k * STEP).toFixed(2) + "px");
       el.style.setProperty("--rot", rot.toFixed(2) + "deg");
       if (k === 1) { var h = document.createElement("h1"); el.appendChild(h); }
       pile.appendChild(el);
@@ -334,6 +338,19 @@
     }
   })();
   var peekEl = layers[0].el.firstChild;
+
+  // Tuned on a phone (card about 342px wide); scale up so a wider card gets a
+  // proportionally thicker pile instead of a thin sliver.
+  var scale = 1;
+  function fitPile() {
+    scale = clamp(stack.offsetWidth / 342, 1, 2);
+    layers.forEach(function (l) {
+      l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
+      l.el.style.setProperty("--dy", (l.dy * scale).toFixed(2) + "px");
+    });
+  }
+  fitPile();
+  window.addEventListener("resize", fitPile);
 
   // Show the current card, the next card peeking underneath, and the pile height.
   var tilt = 0;
@@ -389,7 +406,7 @@
       // The card that was peeking underneath lifts into place from its spot in the pile.
       var p = layers[0];
       card.animate(
-        [{ transform: xf(p.dx, p.dy, p.rot) },
+        [{ transform: xf(p.dx * scale, p.dy * scale, p.rot) },
          { transform: "rotate(" + tilt + "deg)" }],
         { duration: 360, easing: "cubic-bezier(.2,.8,.25,1)" }
       );
