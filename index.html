@@ -49,7 +49,6 @@
 
   /* Paper */
   .card, .sheet {
-    aspect-ratio: 3 / 2;
     background: linear-gradient(160deg, #fbfaf7 0%, var(--card) 60%, #ebeae6 100%);
     border-radius: clamp(14px, 3vw, 22px);
     display: grid;
@@ -58,6 +57,7 @@
   }
 
   .card {
+    aspect-ratio: 3 / 2;
     position: relative;
     z-index: 4;
     user-select: none;
@@ -69,20 +69,27 @@
   /* The cards still in the deck: one layer per ~3 cards, shrinking as you draw */
   .pile {
     position: absolute;
-    inset: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
     pointer-events: none;
-    filter: drop-shadow(0 6px 8px #14141133);
   }
   .sheet {
     position: absolute;
-    inset: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
     box-shadow: 0 1px 0 #fff inset, 0 1px 0 #5a584f47;
     transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--rot, 0deg));
     transition: opacity 260ms ease, visibility 260ms;
     animation: fan 520ms cubic-bezier(.2, .8, .25, 1) backwards;
   }
   .sheet.gone { opacity: 0; visibility: hidden; }
+  /* Only the bottom layer of the pile casts a soft shadow */
+  .sheet.last { box-shadow: 0 1px 0 #fff inset, 0 1px 0 #5a584f47, 0 6px 12px -4px #14141166; }
 
   @keyframes fan {
     from { transform: translate(0, 0) rotate(0deg); }
@@ -343,7 +350,7 @@
   // proportionally thicker pile instead of a thin sliver.
   var scale = 1;
   function fitPile() {
-    scale = clamp(stack.offsetWidth / 342, 1, 2);
+    scale = clamp((stack.offsetWidth || 342) / 342, 1, 2);
     layers.forEach(function (l) {
       l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
       l.el.style.setProperty("--dy", (l.dy * scale).toFixed(2) + "px");
@@ -364,7 +371,10 @@
     card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
     card.style.setProperty("--land", (sign() * rand(0.3, 0.8)).toFixed(2) + "deg");
     var visible = Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1));
-    layers.forEach(function (l, i) { l.el.classList.toggle("gone", i >= visible); });
+    layers.forEach(function (l, i) {
+      l.el.classList.toggle("gone", i >= visible);
+      l.el.classList.toggle("last", i === visible - 1);
+    });
   }
   render();
 
