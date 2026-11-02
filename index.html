@@ -7,7 +7,7 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
 <style>
   :root {
     --table: #a4a3a1;
@@ -151,9 +151,14 @@
     left: 0;
     right: 0;
     text-align: center;
-    font-size: 14px;
-    letter-spacing: 0.02em;
-    font-feature-settings: "tnum" 1, "kern" 1;
+    /* Set like the lettering on the box: classical serif capitals and figures */
+    font-family: "EB Garamond", Garamond, "Times New Roman", serif;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: "kern" 1, "liga" 1;
     color: #4d4c4a;
     pointer-events: none;
   }
@@ -161,7 +166,6 @@
   #title {
     top: max(20px, env(safe-area-inset-top));
     text-transform: uppercase;
-    letter-spacing: 0.12em;
   }
 </style>
 </head>
