@@ -118,15 +118,15 @@
     max-width: 26ch;
   }
 
-  /* The title card, laid out to match the printed card (measured from a photo of the
-     5th edition). Everything is a multiple of one unit, s = 4.45% of the card width:
-     title and subtitle 1s, names 1.11s, copyright 0.75s. */
+  /* The title card, sized from measurements of the printed card. One unit, s, is 4.2% of
+     the card width: title and subtitle 1s, names 1.11s, copyright 0.75s. Line gaps are
+     the photo's, corrected for camera foreshortening, and the block sits just above centre. */
   .card.intro {
     place-items: start center;
-    padding: calc(var(--cw, 640px) * 0.086) calc(var(--cw, 640px) * 0.03) 0;
+    padding: calc(var(--cw, 640px) * 0.125) calc(var(--cw, 640px) * 0.03) 0;
   }
   .card.intro h1 {
-    font-size: calc(var(--cw, 640px) * 0.0445);
+    font-size: calc(var(--cw, 640px) * 0.042);
     line-height: 1.2;
     letter-spacing: 0;
     max-width: none;
@@ -135,9 +135,10 @@
   }
   .card.intro h1 span { display: block; }
   .t-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
-  .t-by { font-size: 1.11em; margin-top: 1.36em; text-transform: uppercase; }
+  .t-sub { margin-top: 0.35em; }
+  .t-by { font-size: 1.11em; margin-top: 2.1em; text-transform: uppercase; }
   .t-by i { font-style: normal; text-transform: none; }
-  .t-fine { font-size: 0.746em; margin-top: 1.01em; }
+  .t-fine { font-size: 0.746em; margin-top: 1.77em; }
 
   /* Small grey labels: title at the top, position in the deck at the bottom */
   #num, #title {
