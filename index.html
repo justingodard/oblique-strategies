@@ -120,10 +120,11 @@
 
   /* The title card, sized from measurements of the printed card. One unit, s, is 4.2% of
      the card width: title and subtitle 1s, names 1.11s, copyright 0.75s. Line gaps are
-     the photo's, corrected for camera foreshortening, and the block sits just above centre. */
+     the photo's, corrected for camera foreshortening. The names sit midway between the subtitle
+     and the copyright line, and the space above the title equals the space below the copyright. */
   .card.intro {
     place-items: start center;
-    padding: calc(var(--cw, 640px) * 0.125) calc(var(--cw, 640px) * 0.03) 0;
+    padding: calc(var(--cw, 640px) * 0.1281) calc(var(--cw, 640px) * 0.03) 0;
   }
   .card.intro h1 {
     font-size: calc(var(--cw, 640px) * 0.042);
@@ -138,7 +139,8 @@
   .t-sub { margin-top: 0.35em; }
   .t-by { font-size: 1.11em; margin-top: 2.1em; text-transform: uppercase; }
   .t-by i { font-style: normal; text-transform: none; }
-  .t-fine { font-size: 0.746em; margin-top: 1.77em; }
+  .bl { display: inline-block; width: 0; height: 0; }
+  .t-fine { font-size: 0.746em; margin-top: 3.21em; }
 
   /* Small grey labels: title at the top, position in the deck at the bottom */
   #num, #title {
@@ -350,10 +352,10 @@
   pos = -1; // -1 is the title card, before the first strategy
 
   var INTRO_HTML =
-    '<span class="t-title">Oblique Strategies</span>' +
-    '<span class="t-sub">Over one hundred worthwhile dilemmas</span>' +
-    '<span class="t-by">Brian Eno <i>and</i> Peter Schmidt</span>' +
-    '<span class="t-fine">\u00A9 1975 Brian Eno and Peter Schmidt</span>';
+    '<span class="t-title"><b class="bl"></b>Oblique Strategies</span>' +
+    '<span class="t-sub"><b class="bl"></b>Over one hundred worthwhile dilemmas</span>' +
+    '<span class="t-by"><b class="bl"></b>Brian Eno <i>and</i> Peter Schmidt</span>' +
+    '<span class="t-fine"><b class="bl"></b>\u00A9 1975 Brian Eno and Peter Schmidt</span>';
 
   // The pile under the top card. Each layer's wobble is fixed when the page loads
   // (a gentle random walk, so the edge looks like real paper), and the pile only
@@ -384,6 +386,7 @@
     scale = clamp((stack.offsetWidth || 342) / 342, 1, 2);
     var w = card.offsetWidth, h = card.offsetHeight;
     if (w) card.style.setProperty("--cw", w + "px");
+    if (card.classList.contains("intro")) fitIntro();
     layers.forEach(function (l) {
       if (w && h) { l.el.style.width = w + "px"; l.el.style.height = h + "px"; }
       l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
@@ -394,6 +397,44 @@
   window.addEventListener("resize", fitPile);
   if (window.ResizeObserver) new ResizeObserver(fitPile).observe(card);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPile);
+
+  // Title card spacing, measured from the real letter shapes in whatever font is in use:
+  //  - the space above the title equals the space below the copyright line
+  //  - the names sit exactly midway between the subtitle and the copyright line
+  var meas = document.createElement("canvas").getContext("2d");
+  function ink(el, text) {
+    var cs = getComputedStyle(el);
+    meas.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+    var m = meas.measureText(text);
+    return { up: m.actualBoundingBoxAscent, down: Math.max(0, m.actualBoundingBoxDescent) };
+  }
+  function fitIntro() {
+    var q = function (c) { return card.querySelector(c); };
+    var title = q(".t-title"), sub = q(".t-sub"), by = q(".t-by"), fine = q(".t-fine");
+    if (!title || !fine) return;
+    card.style.paddingTop = "";
+    fine.style.marginTop = "";
+    // Baseline height from the card's top edge, to a fraction of a pixel, with the card's
+    // tilt and any running animation undone (rotation is about the card's centre).
+    var mt = getComputedStyle(card).transform, sin = 0, cos = 1;
+    if (mt && mt !== "none") { var mv = mt.match(/matrix\(([^)]+)\)/)[1].split(",").map(Number); cos = mv[0]; sin = mv[1]; }
+    var cr = card.getBoundingClientRect(), cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+    var H = parseFloat(getComputedStyle(card).height);
+    var base = function (el) {
+      var r = el.querySelector(".bl").getBoundingClientRect();
+      return -(r.left - cx) * sin + (r.top - cy) * cos + H / 2;
+    };
+    var it = ink(title, "OBLIQUE STRATEGIES"), is = ink(sub, sub.textContent),
+        ia = ink(by, "BRIAN ENO and PETER SCHMIDT"), iff = ink(fine, fine.textContent);
+    var Bt = base(title), Bs = base(sub), Ba = base(by), Bf = base(fine);
+    var gap1 = (Ba - ia.up) - (Bs + is.down);    // subtitle to names
+    var gap2 = (Bf - iff.up) - (Ba + ia.down);   // names to copyright
+    fine.style.marginTop = (parseFloat(getComputedStyle(fine).marginTop) + gap1 - gap2) + "px";
+    Bf += gap1 - gap2;
+    var top = Bt - it.up;                                  // card top to top of title letters
+    var bottom = H - (Bf + iff.down);                      // bottom of copyright to card bottom
+    card.style.paddingTop = (parseFloat(getComputedStyle(card).paddingTop) + (bottom - top) / 2) + "px";
+  }
 
   // Show the current card, the next card peeking underneath, and the pile height.
   var tilt = 0;
@@ -406,6 +447,7 @@
       numEl.textContent = "";
       peekEl.textContent = STRATEGIES[deck[0]];
     } else {
+      card.style.paddingTop = "";
       textEl.textContent = STRATEGIES[deck[pos]];
       // The number is the card's own number from the PDF.
       numEl.textContent = (deck[pos] + 1) + "/" + TOTAL;
