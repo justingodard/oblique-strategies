@@ -168,6 +168,12 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
   }
+
+  /* The finale: after the last card is thrown, the table is left bare */
+  .stack .card, .pile, #num, #title { transition: opacity 500ms ease; }
+  body.ended .card:not(.flyer), body.ended .pile, body.ended #title, body.ended #num { opacity: 0; }
+  body.ended.hint #num { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .stack .card, .pile, #num, #title { transition: none; } }
 </style>
 </head>
 <body>
@@ -390,19 +396,20 @@
   // Tuned on a phone (card about 342px wide); scale up so a wider card gets a
   // proportionally thicker pile instead of a thin sliver.
   var scale = 1, visibleLayers = MAX_LAYERS;
-  // Centre the whole deck (top card plus the visible pile, tilts included) in the page.
+  // Centre the whole deck (top card plus the full pile) in the page. This depends only on
+  // the window size, never on which card is showing, so nothing moves when you draw.
   function lift() {
-    var W = card.offsetWidth, H = card.offsetHeight, rad = Math.PI / 180;
+    var W = stack.offsetWidth, H = W / 1.5, rad = Math.PI / 180;
     var half = function (deg) {           // half the height a tilted card occupies
       var r = Math.abs(deg) * rad;
       return (H / 2) * Math.cos(r) + (W / 2) * Math.sin(r);
     };
-    var top = H / 2 - half(tilt), bottom = H / 2 + half(tilt);
-    for (var i = 0; i < visibleLayers; i++) {
-      var l = layers[i], c = H / 2 + l.dy * scale, e = half(l.rot);
+    var top = H / 2 - half(0), bottom = H / 2 + half(0);
+    layers.forEach(function (l) {
+      var c = H / 2 + l.dy * scale, e = half(l.rot);
       top = Math.min(top, c - e);
       bottom = Math.max(bottom, c + e);
-    }
+    });
     stack.style.setProperty("--lift", (H / 2 - (top + bottom) / 2).toFixed(1) + "px");
   }
   function fitPile() {
@@ -497,10 +504,12 @@
 
   // Throw the top card away in direction (ux, uy). The next card is the one under it.
   function draw(ux, uy, startTransform) {
+    if (ended) return;
     var len = Math.hypot(ux, uy) || 1; ux /= len; uy /= len;
 
     if (!reduced) {
       var flyer = card.cloneNode(true);
+      flyer.classList.add("flyer");
       flyer.removeAttribute("id");
       flyer.removeAttribute("tabindex");
       flyer.removeAttribute("role");
@@ -518,9 +527,8 @@
       setTimeout(function () { flyer.remove(); }, 520);
     }
 
-    var last = deck[pos];
+    if (pos + 1 >= TOTAL) { finale(); return; }   // that was the last card
     pos++;
-    if (pos >= TOTAL) shuffle(last);
     card.style.transition = "none";
     card.style.transform = "";
     render();
@@ -535,6 +543,98 @@
     }
   }
 
+  // ---- Finale: a bare table, then a chime. Tap to shuffle and start over. ----
+  var ended = false, canRestart = false, audioCtx = null;
+
+  function unlockAudio() {          // must run inside the user's gesture (Safari, iOS)
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      audioCtx = audioCtx || new AC();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch (e) {}
+  }
+
+  // Browsers only allow sound after a tap or key press, and iOS is strict about which events
+  // count, so wake the audio engine on the first of any of them, long before the finale.
+  ["pointerdown", "touchend", "click", "keydown"].forEach(function (ev) {
+    document.addEventListener(ev, unlockAudio, { passive: true });
+  });
+
+  // A short original chime, used when there is no startup.mp3 next to the page.
+  function synthChime(done) {
+    var ctx = audioCtx, t0 = ctx.currentTime + 0.05;
+    var master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+    var echo = ctx.createDelay(1); echo.delayTime.value = 0.31;
+    var fb = ctx.createGain(); fb.gain.value = 0.36;
+    var lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2400;
+    echo.connect(lp); lp.connect(fb); fb.connect(echo); lp.connect(master);
+    function tone(freq, at, dur, vol) {
+      [[1, "sine", 1], [2, "triangle", 0.18], [3, "sine", 0.05]].forEach(function (p) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = p[1]; o.frequency.value = freq * p[0];
+        var v = vol * p[2], t = t0 + at;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(v, t + 0.06);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(master); g.connect(echo);
+        o.start(t); o.stop(t + dur + 0.1);
+      });
+    }
+    tone(110.0, 0.0, 4.6, 0.20);   // low A
+    tone(329.63, 0.0, 2.4, 0.22);  // E
+    tone(440.0, 0.5, 2.4, 0.20);   // A
+    tone(554.37, 1.0, 2.4, 0.18);  // C#
+    tone(659.25, 1.5, 2.6, 0.17);  // E
+    tone(880.0, 2.1, 3.0, 0.16);   // A
+    tone(1108.7, 2.1, 3.0, 0.07);  // C#
+    setTimeout(done, 5400);
+  }
+
+  function playFinale(done) {
+    if (!audioCtx) { setTimeout(done, 1500); return; }
+    // If you add your own startup.mp3 beside index.html, it is played instead.
+    fetch("startup.mp3")
+      .then(function (r) { if (!r.ok) throw new Error("none"); return r.arrayBuffer(); })
+      .then(function (b) { return new Promise(function (res, rej) { audioCtx.decodeAudioData(b, res, rej); }); })
+      .then(function (buf) {
+        var src = audioCtx.createBufferSource();
+        src.buffer = buf; src.connect(audioCtx.destination); src.onended = done; src.start();
+        setTimeout(done, buf.duration * 1000 + 1500);   // safety net
+      })
+      .catch(function () { try { synthChime(done); } catch (e) { setTimeout(done, 1500); } });
+  }
+
+  function finale() {
+    ended = true; canRestart = false;
+    unlockAudio();
+    document.body.classList.add("ended");
+    setTimeout(function () {
+      var finished = false;
+      playFinale(function () {
+        if (finished) return; finished = true;
+        canRestart = true;
+        numEl.textContent = "Tap to shuffle again";
+        document.body.classList.add("hint");
+      });
+    }, 1500);
+  }
+
+  function restart() {
+    ended = false; canRestart = false;
+    document.body.classList.remove("ended", "hint");
+    shuffle(); pos = -1;
+    card.style.transition = "none"; card.style.transform = "";
+    render();
+    if (!reduced && card.animate) {
+      card.animate([{ transform: "translateY(-14px) rotate(" + (tilt + 0.6) + "deg)", opacity: 0 },
+                    { transform: "rotate(" + tilt + "deg)", opacity: 1 }],
+                   { duration: 420, easing: "cubic-bezier(.2,.8,.25,1)" });
+    }
+  }
+  function maybeRestart(e) { if (ended && canRestart) { e.preventDefault(); restart(); return true; } return false; }
+  document.addEventListener("pointerdown", maybeRestart, true);
+
   function springBack() {
     card.style.transition = reduced ? "none" : "transform 340ms cubic-bezier(.2,1.3,.4,1)";
     card.style.transform = xf(0, 0, tilt);
@@ -543,7 +643,7 @@
   // Pointer drag, works for mouse, touch and pen.
   var drag = null;
   card.addEventListener("pointerdown", function (e) {
-    if (e.button) return;
+    if (e.button || ended) return;
     card.setPointerCapture(e.pointerId);
     var now = performance.now();
     drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, max: 0, pts: [{ x: e.clientX, y: e.clientY, t: now }] };
@@ -583,6 +683,7 @@
   var keyDir = { ArrowRight: [1, -0.2], ArrowLeft: [-1, -0.2], ArrowUp: [0, -1], ArrowDown: [0, 1] };
   document.addEventListener("keydown", function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (ended) { if (canRestart) { e.preventDefault(); restart(); } return; }
     var d = keyDir[e.key];
     if (!d && (e.key === " " || e.key === "Enter")) d = [sign() * 0.9, -0.45];
     if (!d) return;
