@@ -7,7 +7,7 @@
 <meta name="description" content="A random Oblique Strategy on every page load.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=block" rel="stylesheet">
 <style>
   :root {
     --table: #a4a3a1;
@@ -46,7 +46,11 @@
   /* Card: plain stock, rounded corners, small centered sans text */
   /* Nudged up by half the pile's depth so card and pile together are centred.
      (top, not transform: the labels inside are position: fixed.) */
-  .stack { position: relative; top: var(--lift, 0px); transition: top 300ms ease; }
+  .stack {
+    position: relative; top: var(--lift, 0px); transition: top 300ms ease;
+    /* one text size for the title card and every strategy: 4.2% of the card width */
+    --fs: max(calc(var(--cw, 640px) * 0.042), 13px);
+  }
   .card { cursor: grab; touch-action: none; -webkit-user-drag: none; }
   .card:active { cursor: grabbing; }
 
@@ -110,7 +114,7 @@
     position: relative;
     z-index: 1;
     font-weight: 400;
-    font-size: clamp(1.45rem, 4vw, 2.25rem);
+    font-size: var(--fs);
     line-height: 1.3;
     letter-spacing: -0.01em;
     font-kerning: normal;
@@ -122,7 +126,8 @@
   }
 
   /* The title card, sized from measurements of the printed card. One unit, s, is 4.2% of
-     the card width: title and subtitle 1s, names 1.11s, copyright 0.75s. Line gaps are
+     the card width, the same size as the strategy text: title, subtitle and names 1s,
+     copyright 0.75s. Line gaps are
      the photo's, corrected for camera foreshortening. The names sit midway between the subtitle
      and the copyright line, and the space above the title equals the space below the copyright. */
   .card.intro {
@@ -130,7 +135,7 @@
     padding: calc(var(--cw, 640px) * 0.1281) calc(var(--cw, 640px) * 0.03) 0;
   }
   .card.intro h1 {
-    font-size: calc(var(--cw, 640px) * 0.042);
+    font-size: var(--fs);
     line-height: 1.2;
     letter-spacing: 0;
     max-width: none;
@@ -140,7 +145,7 @@
   .card.intro h1 span { display: block; }
   .t-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
   .t-sub { margin-top: 0.35em; }
-  .t-by { font-size: 1.11em; margin-top: 2.1em; text-transform: uppercase; }
+  .t-by { margin-top: 2.33em; text-transform: uppercase; }
   .t-by i { font-style: normal; text-transform: none; }
   .bl { display: inline-block; width: 0; height: 0; }
   .t-fine { font-size: 0.746em; margin-top: 3.21em; }
@@ -151,14 +156,9 @@
     left: 0;
     right: 0;
     text-align: center;
-    /* Set like the lettering on the box: classical serif capitals and figures */
-    font-family: "EB Garamond", Garamond, "Times New Roman", serif;
-    font-weight: 500;
-    font-size: 17px;
-    line-height: 1;
-    letter-spacing: 0.08em;
-    font-variant-numeric: lining-nums tabular-nums;
-    font-feature-settings: "kern" 1, "liga" 1;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    font-feature-settings: "tnum" 1, "kern" 1;
     color: #4d4c4a;
     pointer-events: none;
   }
@@ -166,6 +166,7 @@
   #title {
     top: max(20px, env(safe-area-inset-top));
     text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
 </style>
 </head>
@@ -407,7 +408,7 @@
   function fitPile() {
     scale = clamp((stack.offsetWidth || 342) / 342, 1, 2);
     var w = card.offsetWidth, h = card.offsetHeight;
-    if (w) card.style.setProperty("--cw", w + "px");
+    if (w) stack.style.setProperty("--cw", w + "px");
     if (card.classList.contains("intro")) fitIntro();
     lift();
     layers.forEach(function (l) {
