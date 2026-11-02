@@ -181,12 +181,11 @@
     transition: color 150ms ease, opacity 500ms ease;
   }
   #title:hover { color: #1f1e1d; }
-  body.ended #title { pointer-events: none; }
+
 
   /* The finale: after the last card is thrown, the table is left bare */
   .stack .card, .pile, #num, #title { transition: opacity 500ms ease; }
-  body.ended .card:not(.flyer), body.ended .pile, body.ended #title, body.ended #num { opacity: 0; }
-  body.ended.hint #num { opacity: 1; }
+  body.ended .card:not(.flyer), body.ended .pile, body.ended #num { opacity: 0; }   /* the header stays */
   @media (prefers-reduced-motion: reduce) { .stack .card, .pile, #num, #title { transition: none; } }
 </style>
 </head>
@@ -557,7 +556,7 @@
     }
   }
 
-  // ---- Finale: a bare table, then a chime. Tap to shuffle and start over. ----
+  // ---- Finale: a bare table with just the header, then a chime. Tap to start over. ----
   var ended = false, canRestart = false, audioCtx = null;
 
   function unlockAudio() {          // must run inside the user's gesture (Safari, iOS)
@@ -624,6 +623,7 @@
     var run = ++finaleRun;
     ended = true; canRestart = false;
     unlockAudio();
+    numEl.textContent = "";
     document.body.classList.add("ended");
     setTimeout(function () {
       if (run !== finaleRun) return;          // started over before the chime began
@@ -631,8 +631,6 @@
       playFinale(function () {
         if (finished || run !== finaleRun) return; finished = true;
         canRestart = true;
-        numEl.textContent = "Tap to shuffle again";
-        document.body.classList.add("hint");
       });
     }, 1500);
   }
@@ -642,7 +640,7 @@
     finaleRun++;                              // cancels a finale that is still in progress
     if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
     ended = false; canRestart = false;
-    document.body.classList.remove("ended", "hint");
+    document.body.classList.remove("ended");
     shuffle(); pos = -1;
     card.style.transition = "none"; card.style.transform = "";
     render();
