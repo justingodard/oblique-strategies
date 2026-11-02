@@ -16,7 +16,8 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overscroll-behavior: none; }
+  /* Cards are thrown off-screen; never let that widen or scroll the page. */
+  html, body { height: 100%; overscroll-behavior: none; overflow: hidden; }
   body {
     -webkit-user-select: none;
     user-select: none;
@@ -43,7 +44,9 @@
   .stack { width: min(100%, 640px); }
 
   /* Card: plain stock, rounded corners, small centered sans text */
-  .stack { position: relative; }
+  /* Nudged up by half the pile's depth so card and pile together are centred.
+     (top, not transform: the labels inside are position: fixed.) */
+  .stack { position: relative; top: var(--lift, 0px); transition: top 300ms ease; }
   .card { cursor: grab; touch-action: none; -webkit-user-drag: none; }
   .card:active { cursor: grabbing; }
 
@@ -100,7 +103,7 @@
     from { transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + var(--land, .6deg))); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .sheet, .card { animation: none; transition: none; }
+    .sheet, .card, .stack { animation: none; transition: none; }
   }
 
   h1 {
@@ -381,12 +384,28 @@
 
   // Tuned on a phone (card about 342px wide); scale up so a wider card gets a
   // proportionally thicker pile instead of a thin sliver.
-  var scale = 1;
+  var scale = 1, visibleLayers = MAX_LAYERS;
+  // Centre the whole deck (top card plus the visible pile, tilts included) in the page.
+  function lift() {
+    var W = card.offsetWidth, H = card.offsetHeight, rad = Math.PI / 180;
+    var half = function (deg) {           // half the height a tilted card occupies
+      var r = Math.abs(deg) * rad;
+      return (H / 2) * Math.cos(r) + (W / 2) * Math.sin(r);
+    };
+    var top = H / 2 - half(tilt), bottom = H / 2 + half(tilt);
+    for (var i = 0; i < visibleLayers; i++) {
+      var l = layers[i], c = H / 2 + l.dy * scale, e = half(l.rot);
+      top = Math.min(top, c - e);
+      bottom = Math.max(bottom, c + e);
+    }
+    stack.style.setProperty("--lift", (H / 2 - (top + bottom) / 2).toFixed(1) + "px");
+  }
   function fitPile() {
     scale = clamp((stack.offsetWidth || 342) / 342, 1, 2);
     var w = card.offsetWidth, h = card.offsetHeight;
     if (w) card.style.setProperty("--cw", w + "px");
     if (card.classList.contains("intro")) fitIntro();
+    lift();
     layers.forEach(function (l) {
       if (w && h) { l.el.style.width = w + "px"; l.el.style.height = h + "px"; }
       l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
@@ -457,6 +476,7 @@
     card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
     card.style.setProperty("--land", (sign() * rand(0.3, 0.8)).toFixed(2) + "deg");
     var visible = Math.min(MAX_LAYERS, Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1)));
+    visibleLayers = visible;
     fitPile();
     layers.forEach(function (l, i) {
       l.el.classList.toggle("gone", i >= visible);
