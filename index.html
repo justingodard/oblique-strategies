@@ -68,6 +68,7 @@
   .card {
     aspect-ratio: 3 / 2;
     position: relative;
+    top: var(--drop, 0px);   /* the pile loses cards from the top, so the top card settles lower */
     z-index: 4;
     user-select: none;
     box-shadow: 0 1px 0 #fff inset, 0 6px 14px -4px #14141159;
@@ -399,12 +400,26 @@
       el.style.zIndex = String(100 - k);
       el.style.animationDelay = Math.min(k, 12) * 18 + "ms";
       el.style.setProperty("--rot", rot.toFixed(2) + "deg");
-      if (k === 1) { el.classList.add("peek"); el.appendChild(document.createElement("h1")); }
+      if (k === MAX_LAYERS) el.classList.add("last");
       pile.appendChild(el);
       layers.push({ el: el, dx: dx, dy: k * STEP, rot: rot });
     }
   })();
-  var peekEl = layers[0].el.firstChild;
+  // The next card's text is shown on whichever layer is currently the top of the pile.
+  var peekEl = document.createElement("h1"), peekLayer = -1;
+  function placePeek(i, text) {
+    if (i >= 0 && i !== peekLayer) {
+      if (peekLayer >= 0) layers[peekLayer].el.classList.remove("peek");
+      layers[i].el.classList.add("peek");
+      layers[i].el.appendChild(peekEl);
+      peekLayer = i;
+    }
+    peekEl.textContent = text;
+  }
+  var depth = MAX_LAYERS, topIdx = 0;   // pile depth in layers (continuous) and its top visible layer
+  function updateDrop() {
+    card.style.setProperty("--drop", ((MAX_LAYERS - depth) * STEP * scale).toFixed(2) + "px");
+  }
 
   // Tuned on a phone (card about 342px wide); scale up so a wider card gets a
   // proportionally thicker pile instead of a thin sliver.
@@ -436,6 +451,7 @@
       l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
       l.el.style.setProperty("--dy", (l.dy * scale).toFixed(2) + "px");
     });
+    updateDrop();
   }
   fitPile();
   window.addEventListener("resize", fitPile);
@@ -489,24 +505,24 @@
     if (intro) {
       textEl.innerHTML = INTRO_HTML;
       numEl.textContent = "";
-      peekEl.textContent = STRATEGIES[deck[0]];
     } else {
       card.style.paddingTop = "";
       textEl.textContent = STRATEGIES[deck[pos]];
       // The number is the card's own number from the PDF.
       numEl.textContent = (deck[pos] + 1) + "/" + TOTAL;
-      peekEl.textContent = remaining > 0 ? STRATEGIES[deck[pos + 1]] : "";
     }
     tilt = sign() * rand(0.4, 1.6);
     card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
     card.style.setProperty("--land", (sign() * rand(0.3, 0.8)).toFixed(2) + "deg");
-    var visible = Math.min(MAX_LAYERS, Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1)));
+    // The pile loses layers from the TOP; the bottom of the pile never moves.
+    depth = Math.min(MAX_LAYERS, remaining * MAX_LAYERS / (TOTAL - 1));
+    var visible = Math.ceil(depth - 1e-6);
+    topIdx = MAX_LAYERS - visible;
     visibleLayers = visible;
     fitPile();
-    layers.forEach(function (l, i) {
-      l.el.classList.toggle("gone", i >= visible);
-      l.el.classList.toggle("last", i === visible - 1);
-    });
+    layers.forEach(function (l, i) { l.el.classList.toggle("gone", i < topIdx); });
+    if (visible > 0) placePeek(topIdx, STRATEGIES[deck[intro ? 0 : pos + 1]]);
+    else peekEl.textContent = "";
   }
   render();
 
@@ -530,6 +546,7 @@
       flyer.setAttribute("aria-hidden", "true");
       flyer.querySelector("h1").removeAttribute("id");
       flyer.style.cssText += ";animation:none;transition:none;position:absolute;inset:0;z-index:10;pointer-events:none;transform:" + (startTransform || xf(0, 0, tilt));
+      flyer.style.top = card.style.getPropertyValue("--drop") || "0px";
       stack.appendChild(flyer);
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
@@ -541,15 +558,16 @@
     }
 
     if (pos + 1 >= TOTAL) { finale(); return; }   // that was the last card
+    var from = layers[Math.min(topIdx, MAX_LAYERS - 1)];   // the layer this card will be lifted from
     pos++;
     card.style.transition = "none";
     card.style.transform = "";
     render();
     if (!reduced && card.animate) {
       // The card that was peeking underneath lifts into place from its spot in the pile.
-      var p = layers[0];
+      var p = from, dropNow = parseFloat(card.style.getPropertyValue("--drop")) || 0;
       card.animate(
-        [{ transform: xf(p.dx * scale, p.dy * scale, p.rot) },
+        [{ transform: xf(p.dx * scale, p.dy * scale - dropNow, p.rot) },
          { transform: "rotate(" + tilt + "deg)" }],
         { duration: 360, easing: "cubic-bezier(.2,.8,.25,1)" }
       );
