@@ -51,6 +51,8 @@
   .card, .sheet {
     background: linear-gradient(160deg, #fbfaf7 0%, var(--card) 60%, #ebeae6 100%);
     border-radius: clamp(14px, 3vw, 22px);
+  }
+  .card, .sheet.peek {
     display: grid;
     place-items: center;
     padding: clamp(24px, 7vw, 64px);
@@ -339,7 +341,7 @@
       el.style.zIndex = String(100 - k);
       el.style.animationDelay = Math.min(k, 12) * 18 + "ms";
       el.style.setProperty("--rot", rot.toFixed(2) + "deg");
-      if (k === 1) { var h = document.createElement("h1"); el.appendChild(h); }
+      if (k === 1) { el.classList.add("peek"); el.appendChild(document.createElement("h1")); }
       pile.appendChild(el);
       layers.push({ el: el, dx: dx, dy: k * STEP, rot: rot });
     }
@@ -351,13 +353,17 @@
   var scale = 1;
   function fitPile() {
     scale = clamp((stack.offsetWidth || 342) / 342, 1, 2);
+    var w = card.offsetWidth, h = card.offsetHeight;
     layers.forEach(function (l) {
+      if (w && h) { l.el.style.width = w + "px"; l.el.style.height = h + "px"; }
       l.el.style.setProperty("--dx", (l.dx * scale).toFixed(2) + "px");
       l.el.style.setProperty("--dy", (l.dy * scale).toFixed(2) + "px");
     });
   }
   fitPile();
   window.addEventListener("resize", fitPile);
+  if (window.ResizeObserver) new ResizeObserver(fitPile).observe(card);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPile);
 
   // Show the current card, the next card peeking underneath, and the pile height.
   var tilt = 0;
@@ -371,6 +377,7 @@
     card.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
     card.style.setProperty("--land", (sign() * rand(0.3, 0.8)).toFixed(2) + "deg");
     var visible = Math.ceil(remaining * MAX_LAYERS / (TOTAL - 1));
+    fitPile();
     layers.forEach(function (l, i) {
       l.el.classList.toggle("gone", i >= visible);
       l.el.classList.toggle("last", i === visible - 1);
